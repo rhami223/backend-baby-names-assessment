@@ -43,8 +43,25 @@ def extract_names(filename):
     the name-rank strings in alphabetical order.
     ['2006', 'Aaliyah 91', 'Aaron 57', 'Abagail 895', ...]
     """
-    names = []
-    # +++your code here+++
+    names = [] 
+    name_dict = {}
+    with open(filename) as f:
+        contents = f.read()
+        pattern = re.compile(r'Popularity in')
+        matches = pattern.finditer(contents)
+        for match in matches:
+            year = match.span()
+            names.append(contents[year[1]:][1:5])
+    with open(filename) as l:    
+        for line in l:
+            rank_name = re.findall(r'"right"><td>(.*?)</td><td>(.*?)</td><td>(.*?)</td>', line)
+            for name in rank_name:
+                if not name[1] in name_dict:
+                    name_dict[name[1]] = name[0]
+                if not name[2] in name_dict:
+                    name_dict[name[2]] = name[0]
+    for key in sorted(name_dict):
+        names.append(key + " " + name_dict[key])
     return names
 
 
@@ -67,22 +84,24 @@ def main(args):
     # Run the parser to collect command line arguments into a
     # NAMESPACE called 'ns'
     ns = parser.parse_args(args)
-
     if not ns:
         parser.print_usage()
         sys.exit(1)
-
     file_list = ns.files
-
     # option flag
     create_summary = ns.summaryfile
-
     # For each filename, call `extract_names()` with that single file.
     # Format the resulting list as a vertical list (separated by newline \n).
     # Use the create_summary flag to decide whether to print the list
     # or to write the list to a summary file (e.g. `baby1990.html.summary`).
-
-    # +++your code here+++
+    for filename in file_list:
+        names = extract_names(filename)
+        text = '\n'.join(names)
+        if create_summary:
+            with open(f'{filename}.summary', 'w') as f:
+                f.write(text)
+        else:
+            print(text)
 
 
 if __name__ == '__main__':
